@@ -89,9 +89,12 @@ var enumValidator = {
 
   validate:function( value, prop ) {
 
-    var enumProp = prop.enum;
+    var enumValues = prop.enum;
 
-    if ( _.contains(enumProp, value) ) return true;
+    if ( _.contains(enumValues, value) ) return true;
+
+    if ( _.findWhere(enumValues, value) ) return true;
+
     return false;
   }
 
