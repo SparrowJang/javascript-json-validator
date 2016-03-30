@@ -1,4 +1,5 @@
 
+var _ = require('underscore');
 var propertyUtils = require('../utils/propertyUtils');
 var utils = require('../utils/utils');
 
@@ -80,9 +81,26 @@ var requireValidator = {
   }
 };
 
+var enumValidator = {
+
+  isRequired:function( prop ) {
+    if ( prop.enum ) return true; else return false;
+  },
+
+  validate:function( value, prop ) {
+
+    var enumProp = prop.enum;
+
+    if ( _.contains(enumProp, value) ) return true;
+    return false;
+  }
+
+};
+
 propertyValidators = [
   requireValidator,
-  typesValidator
+  typesValidator,
+  enumValidator
 ];
 
 
