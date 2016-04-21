@@ -1,104 +1,8 @@
 
-var _ = require('underscore');
 var propertyUtils = require('../utils/propertyUtils');
-var utils = require('../utils/utils');
-
-var typesValidator = (function(){
-
-  var _validatorMap = {
-
-    number: function( value ){
-      return utils.isType( value, 'number' );
-    },
-
-    integer: function( value ){
-      return this.number( value ) && !/\./.test( value );
-    },
-
-    string: function( value ){
-      return utils.isType( value, 'string' );
-    },
-
-    boolean:function( value ){
-      return utils.isType( value, 'boolean' );
-    },
-
-    object: function( value ){
-      return utils.isType( value, 'object' );
-    },
-
-    array:  function( value ){
-      return utils.isArray( value );
-    }
-  };
-
-  var _getValidtor = function( type ){
-    return _validatorMap[type];
-  };
-
-  return {
-
-    isRequired:function( prop ){
-      return !!prop.types;
-    },
-
-    validate: function( value, prop ){
-      var types = prop.types;
-      var valid;
-      var validateType;
-      var type;
-
-      for (var index in types) {
-        type = types[index];
-        validateType = _getValidtor( type );
-        valid = false;
-
-        if ( !validateType ) throw Exception('The "' + type + '" type is not support!');
-
-        if ( validateType( value ) ) {
-          valid = true;
-          break;
-        }
-      }
-
-      return valid;
-    }
-  };
-})();
-
-
-var requireValidator = {
-
-  isRequired:function( prop ) {
-    return !!prop.required;
-  },
-
-  validate:function( value, prop ){
-
-    if ( prop.required ) return !utils.isType(value, 'undefined');
-
-    return true;
-  }
-};
-
-var enumValidator = {
-
-  isRequired:function( prop ) {
-    if ( prop.enum ) return true; else return false;
-  },
-
-  validate:function( value, prop ) {
-
-    var enumValues = prop.enum;
-
-    if ( _.contains(enumValues, value) ) return true;
-
-    if ( _.findWhere(enumValues, value) ) return true;
-
-    return false;
-  }
-
-};
+var typesValidator = require('./typesValidator');
+var requireValidator = require('./requireValidator');
+var enumValidator = require('./enumValidator');
 
 propertyValidators = [
   requireValidator,
@@ -107,17 +11,36 @@ propertyValidators = [
 ];
 
 
-var validate = function( inputProps, properties ){
+var validate = function( inputProps, specProperties ){
+
+  var validationResult = {};
+  var success = true;
  
   propertyUtils.each(inputProps, function(inputProp, inputName){
-    propertyUtils.each(properties, function( prop, propName ){
-      console.log(prop, propName);
+    propertyUtils.each(specProperties, function( specProp, specPropName ){
+
       propertyValidators.forEach(function(validator){
-        if ( validator.isRequired( prop ) )
-        console.log(validator.validate(inputProp, prop));
+        if ( validator.isRequired( specProp ) ) {
+          validationResult[specPropName] = {
+            value:inputProp
+          };
+
+          if ( validator.validate(inputProp, specProp) ) {
+            validationResult[specPropName]['success'] = true;
+          } else {
+            success = false;
+            validationResult[specPropName]['success'] = false;
+          }
+        }
       });
+
     })
   });
+
+  return {
+    success:success,
+    validationResult:validationResult
+  };
 };
 
 exports.validate = validate;
