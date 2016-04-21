@@ -1,6 +1,7 @@
 Javascript JSON Validator
 ===========================
 
+[![Build Status](https://travis-ci.org/SparrowJang/javascript-json-validator.svg)](https://travis-ci.org/SparrowJang/javascript-json-validator)
 
 ## Spec Document
 
